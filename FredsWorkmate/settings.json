@@ -1,0 +1,7 @@
+{
+  "postgresHost": "127.0.0.1",
+  "postgresPort": 5432,
+  "postgresDatabase": "workmate",
+  "postgresUser": "postgres",
+  "postgresPassword": "postgres"
+}

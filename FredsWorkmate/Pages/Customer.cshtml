@@ -1,0 +1,20 @@
+﻿@page "/Customers/{id}"
+@model FredsWorkmate.Pages.CustomerModel
+<table>
+    <tr>
+        <td>Id</td>
+        <td>@Model.Customer.Id</td>
+    </tr>
+    <tr>
+        <td>Name</td>
+        <td>@Model.Customer.Name</td>
+    </tr>
+    <tr>
+        <td>Email</td>
+        <td>@Model.Customer.Email</td>
+    </tr>
+    <tr>
+        <td>Address</td>
+        <td><pre>@Model.Customer.Address</pre></td>
+    </tr>
+</table>
