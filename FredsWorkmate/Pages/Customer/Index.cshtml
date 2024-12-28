@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model CustomerIndex
+@{
+    ViewData["Title"] = "Customers";
+    Html.EntityCreationForm<Customer>();
+    Html.EntityTable<Customer>(Model.db.Customers);
+}

@@ -1,0 +1,11 @@
+﻿@page "{id}"
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model NoteEdit
+@{
+    ViewData["Title"] = "Edit Note";
+    Html.EntityEditor<Note>(Model.Entity);
+}
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>

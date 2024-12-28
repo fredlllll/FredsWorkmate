@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model NoteIndex
+@{
+    ViewData["Title"] = "Notes";
+    Html.EntityCreationForm<Note>();
+    Html.EntityTable<Note>(Model.db.Notes);
+}

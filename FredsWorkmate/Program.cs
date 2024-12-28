@@ -13,12 +13,7 @@ namespace FredsWorkmate
 
             // Add services to the container.
             builder.Services.AddRazorPages().AddRazorPagesOptions((o) => {
-
-                //o.Conventions.AddPageRoute("/Index","");
-
-                //o.Conventions.AddPageRoute("/Customers", "/Customers");
-                //o.Conventions.AddPageRoute("/Customer", "/Customers/{id}");
-
+                //extra routes go here
             });
             builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(DatabaseContext.GetConnectionString()));
 
@@ -32,6 +27,8 @@ namespace FredsWorkmate
             else
             {
                 app.UseDeveloperExceptionPage();
+                app.MapGet("/debug/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
+        string.Join("\n", endpointSources.SelectMany(source => source.Endpoints)));
             }
 
             using (var scope = app.Services.CreateScope())

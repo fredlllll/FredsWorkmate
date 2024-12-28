@@ -8,45 +8,48 @@
     <link rel="stylesheet" href="~/FredsWorkmate.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">FredsWorkmate</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Index</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Customers">Customers</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - FredsWorkmate<!-- - <a asp-area="" asp-page="/Privacy">Privacy</a>-->
+    <nav>
+        <a class="home-link" asp-page="/Index">ↈ FredsWorkmate</a>
+        <div>
+            <ul>
+                <li>
+                    <a asp-page="/Address/Index">Addresses</a>
+                </li>
+                <li>
+                    <a asp-page="/BankInformation/Index">Bank Informations</a>
+                </li>
+                <li>
+                    <a asp-page="/CompanyInformation/Index">Company Informations</a>
+                </li>
+                <li>
+                    <a asp-page="/Customer/Index">Customers</a>
+                </li>
+                <li>
+                    <a asp-page="/Project/Index">Projects</a>
+                </li>
+                <li>
+                    <a asp-page="/TrackedTime/Index">Tracked Time</a>
+                </li>
+                <li>
+                    <a asp-page="/Note/Index">Notes</a>
+                </li>
+                <li>
+                    <a asp-page="/Invoice/Index">Invoices</a>
+                </li>
+            </ul>
         </div>
+    </nav>
+    <main role="main">
+        @RenderBody()
+    </main>
+    <footer>
+            &copy; 2024 - FredsWorkmate
     </footer>
-
     <!--
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     -->
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model CompanyInformationIndex
+@{
+    ViewData["Title"] = "CompanyInformation";
+    Html.EntityCreationForm<CompanyInformation>();
+    Html.EntityTable<CompanyInformation>(Model.db.CompanyInformations);
+}

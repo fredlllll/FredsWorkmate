@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model InvoiceIndex
+@{
+    ViewData["Title"] = "Invoices";
+    Html.EntityCreationForm<Invoice>();
+    Html.EntityTable<Invoice>(Model.db.Invoices);
+}

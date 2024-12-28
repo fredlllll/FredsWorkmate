@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model TrackedTimeIndex
+@{
+    ViewData["Title"] = "TrackedTimes";
+    Html.EntityCreationForm<TrackedTime>();
+    Html.EntityTable<TrackedTime>(Model.db.TrackedTimes);
+}

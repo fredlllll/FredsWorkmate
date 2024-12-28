@@ -3,23 +3,53 @@ using FredsWorkmate.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using UUIDNext;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace FredsWorkmate.Database
 {
     public class DatabaseContext : DbContext
     {
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
-
-        public DbSet<Project> Projects { get; set; }
+        public DbSet<Address> Addresses { get; set; }
+        public DbSet<BankInformation> BankInformations { get; set; }
+        public DbSet<CompanyInformation> CompanyInformations { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoicePosition> InvoicePositions { get; set; }
+        public DbSet<Note> Notes { get; set; }
+        public DbSet<Project> Projects { get; set; }
         public DbSet<TrackedTime> TrackedTimes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Customer>().ToTable(nameof(Customer));
-            modelBuilder.Entity<Project>().ToTable(nameof(Project));
-            modelBuilder.Entity<TrackedTime>().ToTable(nameof(TrackedTime));
+            modelBuilder.Entity<Address>().ToTable(nameof(Addresses));
+            modelBuilder.Entity<BankInformation>().ToTable(nameof(BankInformations));
+            modelBuilder.Entity<CompanyInformation>().ToTable(nameof(CompanyInformations));
+            modelBuilder.Entity<Customer>().ToTable(nameof(Customers));
+            modelBuilder.Entity<Invoice>().ToTable(nameof(Invoices));
+            modelBuilder.Entity<InvoicePosition>().ToTable(nameof(InvoicePositions));
+            modelBuilder.Entity<Note>().ToTable(nameof(Notes));
+            modelBuilder.Entity<Project>().ToTable(nameof(Projects));
+            modelBuilder.Entity<TrackedTime>().ToTable(nameof(TrackedTimes));
+        }
+
+        public object GetEntityDbSet(Type t)
+        {
+            var properties = GetType().GetProperties();
+            object? set = null;
+            foreach (var prop in properties)
+            {
+                var pt = prop.PropertyType;
+                if (pt.IsGenericType && pt.GenericTypeArguments[0] == t)
+                {
+                    set = prop.GetValue(this);
+                    break;
+                }
+            }
+            if (set == null)
+            {
+                throw new InvalidDataException($"cant find db set for type {t}");
+            }
+            return set;
         }
 
         public static string GetConnectionString()

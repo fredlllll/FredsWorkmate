@@ -1,0 +1,12 @@
+﻿@page "{id}"
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model ProjectDetails
+@{
+    ViewData["Title"] = "Details Of Project";
+    Html.EntityDetails<Project>(Model.Entity);
+}
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.Entity.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

@@ -1,0 +1,9 @@
+﻿@page "{id}"
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model CompanyInformationDetails
+@{
+    ViewData["Title"] = "Details Of CompanyInformation";
+    Html.EntityDetails<CompanyInformation>(Model.Entity);
+    Html.DetailNavigation(Model.Entity.Id);
+}

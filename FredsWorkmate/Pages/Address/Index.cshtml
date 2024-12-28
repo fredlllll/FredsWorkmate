@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model AddressIndex
+@{
+    ViewData["Title"] = "Address";
+    Html.EntityCreationForm<Address>();
+    Html.EntityTable<Address>(Model.db.Addresses);
+}

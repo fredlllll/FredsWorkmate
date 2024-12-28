@@ -18,4 +18,9 @@
     <PackageReference Include="UUIDNext" Version="4.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+    <Folder Include="Pages\Shared\DisplayTemplates\" />
+  </ItemGroup>
+
 </Project>

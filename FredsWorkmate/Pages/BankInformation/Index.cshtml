@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model BankInformationIndex
+@{
+    ViewData["Title"] = "BankInformations";
+    Html.EntityCreationForm<BankInformation>();
+    Html.EntityTable<BankInformation>(Model.db.BankInformations);
+}

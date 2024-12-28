@@ -1,0 +1,9 @@
+﻿@page
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util
+@model ProjectIndex
+@{
+    ViewData["Title"] = "Projects";
+    Html.EntityCreationForm<Project>();
+    Html.EntityTable<Project>(Model.db.Projects);
+}
