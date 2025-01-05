@@ -11,6 +11,11 @@ namespace FredsWorkmate.Database.Models
 
         public string? OwnerId { get; set; }
         public string? OwnerType { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Title}: {Content}({Id})";
+        }
     }
 
     public static class NoteExtensions
@@ -33,8 +38,7 @@ namespace FredsWorkmate.Database.Models
 
             var ownerType = Type.GetType(note.OwnerType) ?? throw new InvalidOperationException($"Could not find type {note.OwnerType}");
 
-            object ownerSet = dbContext.GetEntityDbSet(ownerType);
-
+            var ownerSet = dbContext.GetEntityDbSet(ownerType);
             var setType = ownerSet.GetType();
             var method = setType.GetMethod("Find") ?? throw new InvalidOperationException($"Could not find Find method on set {ownerSet}");
             return (INoteOwner?)method.Invoke(ownerSet, [new object[] { note.OwnerId }]);

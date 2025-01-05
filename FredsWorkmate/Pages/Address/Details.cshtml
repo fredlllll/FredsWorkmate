@@ -1,9 +1,9 @@
 ﻿@page "{id}"
 @using FredsWorkmate.Database.Models
-@using FredsWorkmate.Util
+@using FredsWorkmate.Util.HtmlHelperExtensions
 @model AddressDetails
 @{
     ViewData["Title"] = "Details Of Address";
     Html.EntityDetails<Address>(Model.Entity);
-    Html.DetailNavigation(Model.Entity.Id);
+    Html.DetailsNavigation(Model.Entity.Id);
 }

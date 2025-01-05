@@ -5,5 +5,10 @@
         public required Project Project { get; set; }
         public required decimal Hours { get; set; }
         public required DateOnly Date { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Date}: {Hours}({Id})";
+        }
     }
 }

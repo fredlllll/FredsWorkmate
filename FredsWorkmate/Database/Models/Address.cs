@@ -14,7 +14,7 @@ namespace FredsWorkmate.Database.Models
 
         public override string ToString()
         {
-            return $"{Id}({AddressExtra} {Street} {HouseNumber}, {PostalCode} {City}, {Country})";
+            return $"{AddressExtra} {Street} {HouseNumber}, {PostalCode} {City}, {Country}({Id})";
         }
     }
 }

@@ -32,7 +32,7 @@ namespace FredsWorkmate.Database
             modelBuilder.Entity<TrackedTime>().ToTable(nameof(TrackedTimes));
         }
 
-        public object GetEntityDbSet(Type t)
+        public IQueryable GetEntityDbSet(Type t)
         {
             var properties = GetType().GetProperties();
             object? set = null;
@@ -49,7 +49,7 @@ namespace FredsWorkmate.Database
             {
                 throw new InvalidDataException($"cant find db set for type {t}");
             }
-            return set;
+            return (IQueryable)set;
         }
 
         public static string GetConnectionString()
@@ -85,6 +85,15 @@ namespace FredsWorkmate.Database
             var typeId = t.Name.ToLower();
             var id = Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql);
             return $"{typeId}_{id}";
+        }
+
+        public void LoadReferences<T>(T instance) where T : Model
+        {
+            var set = this.Set<T>();
+            foreach (var reference in set.Entry(instance).References)
+            {
+                reference.Load();
+            }
         }
     }
 }

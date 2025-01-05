@@ -1,4 +1,6 @@
 ﻿
+using FredsWorkmate.Database.Models;
+
 namespace FredsWorkmate.Util
 {
     public static class Util

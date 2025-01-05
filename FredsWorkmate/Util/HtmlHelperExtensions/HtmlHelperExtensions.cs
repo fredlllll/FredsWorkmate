@@ -1,17 +1,13 @@
 ﻿using FredsWorkmate.Database;
 using FredsWorkmate.Database.Models;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Reflection;
 
-namespace FredsWorkmate.Util
+namespace FredsWorkmate.Util.HtmlHelperExtensions
 {
     public static class HtmlHelperExtensions
     {
-        static readonly Func<Model, SelectListItem> ModelToSelectListItem = x => new SelectListItem { Value = x.Id, Text = x.ToString() };
-
         static List<PropertyInfo> GetSortedDisplayProperties(Type t)
         {
             List<PropertyInfo> properties = new(t.GetProperties());
@@ -37,12 +33,15 @@ namespace FredsWorkmate.Util
 
             foreach (var p in t.GetEditableProperties())
             {
+                if (p.PropertyType.IsGenericType(typeof(ICollection<>)))
+                {
+                    continue; // lists dont make sense in create
+                }
                 writer.WriteLine($"  <dt>{p.Name}</dt>");
                 writer.Write("  <dd>");
                 if (p.PropertyType.IsAssignableTo(typeof(Model)))
                 {
-                    dynamic dset = htmlHelper.ViewContext.HttpContext.RequestServices.GetRequiredService<DatabaseContext>().GetEntityDbSet(p.PropertyType);
-                    writer.WriteLine(htmlHelper.DropDownList(p.Name, Enumerable.Select(dset, ModelToSelectListItem), p.Name, null));
+                    htmlHelper.PropertySelect(p);
                 }
                 else
                 {
@@ -56,7 +55,7 @@ namespace FredsWorkmate.Util
             writer.WriteLine("</form>");
         }
 
-        public static void EntityTable<T>(this IHtmlHelper htmlHelper, DbSet<T> dbSet) where T : Model
+        public static void EntityTable<T>(this IHtmlHelper htmlHelper, IEnumerable<T> dbSet) where T : Model
         {
             ArgumentNullException.ThrowIfNull(htmlHelper);
             var t = typeof(T);
@@ -79,6 +78,10 @@ namespace FredsWorkmate.Util
                 writer.WriteLine("  <tr>");
                 foreach (var p in properties)
                 {
+                    if (p.PropertyType.IsGenericType(typeof(ICollection<>)))
+                    {
+                        continue; // lists dont make sense in table
+                    }
                     if (p.Name == "Id")
                     {
                         writer.WriteLine($"    <td><a href=\"{htmlHelper.ViewContext.HttpContext.Request.Path.Value?.TrimEnd('/')}/Details/{item.Id}\">{p.GetValue(item)}</a></td>");
@@ -105,6 +108,10 @@ namespace FredsWorkmate.Util
             writer.WriteLine("<dl>");
             foreach (var p in properties)
             {
+                if (p.PropertyType.IsGenericType(typeof(ICollection<>)))
+                {
+                    continue; // lists dont make sense in details
+                }
                 writer.WriteLine($"  <dt>{p.Name}</dt>");
                 writer.Write("  <dd>");
                 var value = p.GetValue(entity);
@@ -119,10 +126,6 @@ namespace FredsWorkmate.Util
                     {
                         writer.Write("NULL");
                     }
-                }
-                else if (p.PropertyType.IsGenericType(typeof(ICollection<>)))
-                {
-                    //TODO: how will we display navigation lists?
                 }
                 else
                 {
@@ -145,15 +148,17 @@ namespace FredsWorkmate.Util
 
             foreach (var p in t.GetProperties())
             {
+                if (p.PropertyType.IsGenericType(typeof(ICollection<>)))
+                {
+                    continue; // lists dont make sense in edit
+                }
                 if (!Attribute.IsDefined(p, typeof(AutoParameterAttribute)))
                 {
                     writer.WriteLine($"  <dt>{p.Name}</dt>");
                     writer.Write("  <dd>");
                     if (p.PropertyType.IsAssignableTo(typeof(Model)))
                     {
-                        dynamic dset = htmlHelper.ViewContext.HttpContext.RequestServices.GetRequiredService<DatabaseContext>().GetEntityDbSet(p.PropertyType);
-                        //TODO: select currently set value
-                        writer.WriteLine(htmlHelper.DropDownList(p.Name, Enumerable.Select(dset, ModelToSelectListItem), p.Name, null));
+                        htmlHelper.PropertySelect(p, (Model?)p.GetValue(entity));
                     }
                     else
                     {
@@ -168,13 +173,69 @@ namespace FredsWorkmate.Util
             writer.WriteLine("</form>");
         }
 
-        public static void DetailNavigation(this IHtmlHelper htmlHelper, string id)
+        public static void DetailsNavigation(this IHtmlHelper htmlHelper, string id)
         {
             var writer = htmlHelper.ViewContext.Writer;
             writer.WriteLine("<div>");
             writer.WriteLine($"<a href=\"../Edit/{id}\">Edit</a>");
             writer.WriteLine($"<a href=\"..\">Back to List</a>");
+            writer.WriteLine($"<form method=\"POST\" action=\"?handler=Delete\">");
+            writer.WriteLine(htmlHelper.AntiForgeryToken());
+            writer.WriteLine($"<input type=\"submit\" value=\"Delete\" style=\"color:red\">");
+            writer.WriteLine("</form>");
             writer.WriteLine("</div>");
+        }
+
+        public static void PropertySelect(this IHtmlHelper htmlHelper, PropertyInfo property, Model? selectedValue = null)
+        {
+            var writer = htmlHelper.ViewContext.Writer;
+            var db = htmlHelper.ViewContext.HttpContext.RequestServices.GetRequiredService<DatabaseContext>();
+
+            writer.WriteLine($"<select name=\"{property.Name}\">");
+            if (property.IsNullable())
+            {
+                writer.WriteLine($"<option value=\"\">Null ({property.PropertyType.Name})</option>");
+            }
+            else
+            {
+                writer.WriteLine($"<option value=\"\">Not selected, not nullable ({property.PropertyType.Name})</option>");
+            }
+            var dbSet = db.GetEntityDbSet(property.PropertyType);
+
+            foreach (Model m in dbSet)
+            {
+                if (m.Id == selectedValue?.Id)
+                {
+                    writer.WriteLine($"<option selected value=\"{m.Id}\">{m}</option>");
+                }
+                else
+                {
+                    writer.WriteLine($"<option value=\"{m.Id}\">{m}</option>");
+                }
+            }
+            writer.WriteLine("</select>");
+        }
+
+        public static void EnumSelect<T>(this IHtmlHelper htmlHelper, string name, T? selected = default) where T : struct, Enum
+        {
+            Type t = typeof(T);
+            var writer = htmlHelper.ViewContext.Writer;
+
+            writer.WriteLine($"<select name=\"{name}\">");
+            writer.WriteLine($"<option value=\"\">Not selected ({t.Name})</option>");
+            var values = Enum.GetValues<T>();
+            foreach (T e in values)
+            {
+                if (selected != null && Equals(selected.Value, e))
+                {
+                    writer.WriteLine($"<option selected value=\"{e}\">{e}</option>");
+                }
+                else
+                {
+                    writer.WriteLine($"<option value=\"{e}\">{e}</option>");
+                }
+            }
+            writer.WriteLine("</select>");
         }
     }
 }

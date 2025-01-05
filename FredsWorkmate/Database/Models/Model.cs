@@ -1,4 +1,5 @@
 ﻿using FredsWorkmate.Util;
+using System.ComponentModel.DataAnnotations;
 
 namespace FredsWorkmate.Database.Models
 {
@@ -10,6 +11,7 @@ namespace FredsWorkmate.Database.Models
             Updated = DateTime.UtcNow;
         }
         [AutoParameter]
+        [Key]
         public required string Id { get; set; }
         [AutoParameter]
         public DateTime Created { get; set; }

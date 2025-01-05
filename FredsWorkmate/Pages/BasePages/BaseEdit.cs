@@ -20,7 +20,9 @@ namespace FredsWorkmate.Pages.BasePages
 
         public void OnGet(string id)
         {
-            Entity = db.Set<T>().First(x => x.Id == id);
+            var set = db.Set<T>();
+            Entity = set.Find(id) ?? throw new Exception("not found");
+            db.LoadReferences(Entity);
         }
 
         public void OnPostEdit(string id)

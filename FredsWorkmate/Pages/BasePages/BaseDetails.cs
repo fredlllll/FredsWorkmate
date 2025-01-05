@@ -21,10 +21,17 @@ namespace FredsWorkmate.Pages.BasePages
         {
             var set = db.Set<T>();
             Entity = set.Find(id) ?? throw new Exception("not found");
-            foreach (var reference in set.Entry(Entity).References)
-            {
-                reference.Load();
-            }
+            db.LoadReferences(Entity);
+        }
+
+        public void OnPostDelete(string id)
+        {
+            var set = db.Set<T>();
+            Entity = set.Find(id) ?? throw new Exception("not found");
+            set.Remove(Entity);
+            db.SaveChanges();
+            var t = typeof(T);
+            LocalRedirect($"/{t.Name}");
         }
     }
 }

@@ -6,5 +6,10 @@
         public required string Description { get; set; }
         public required Customer? Customer { get; set; }
         public required ICollection<Note> Notes { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name}, {Description}({Id})";
+        }
     }
 }

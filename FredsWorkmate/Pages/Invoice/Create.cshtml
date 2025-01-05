@@ -1,0 +1,58 @@
+﻿@page
+@using FredsWorkmate.Database
+@using FredsWorkmate.Database.Models
+@using FredsWorkmate.Util.HtmlHelperExtensions
+@model InvoiceCreate
+@{
+    ViewData["Title"] = "Create Invoice";
+}
+<form asp-asp-page-handler="Create" method="post">
+    <dl>
+        <dt>Invoice Number</dt>
+        <dd><input type="text" name="InvoiceNumber" value="@(Model.ProposedInvoiceNumber)" /></dd>
+        <dt>Invoice Date</dt>
+        <dd><input type="date" name="InvoiceDate" value="@(Model.CurrentDate)" /></dd>
+        <dt>Buyer</dt>
+        <dd>
+            @Html.DropDownList("Buyer", Model.db.Customers.Select(x => new SelectListItem(x.CompanyName, x.Id)), "BuyerLabel");
+            <h6>Or:</h6>
+            <input type="text" name="Buyer.ContactName" placeholder="Buyer Contact Name" />
+            <input type="text" name="Buyer.CompanyName" placeholder="Buyer Company Name" />
+            <input type="text" name="Buyer.Email" placeholder="Buyer Email" />
+            <input type="number" name="Buyer.VATRate" placeholder="Buyer VAT Rate" value="0.19" min="0" max="1" step="0.01" />
+        </dd>
+        <dt>Seller</dt>
+        <dd>
+            @Html.DropDownList("Seller", Model.db.CompanyInformations.Select(x => new SelectListItem(x.CompanyName, x.Id)), "SellerLabel");
+            <h6>Or:</h6>
+            <input type="text" name="Seller.ContactName" placeholder="Seller Contact Name" />
+            <input type="text" name="Seller.CompanyName" placeholder="Seller Company Name" />
+            <input type="text" name="Seller.Email" placeholder="Seller Email" />
+            <input type="text" name="Seller.Street" placeholder="Seller Street" />
+            <input type="text" name="Seller.HouseNumber" placeholder="Seller House Number" />
+            <input type="text" name="Seller.PostalCode" placeholder="Seller Postal Code" />
+            <input type="text" name="Seller.City" placeholder="Seller City" />
+            <input type="text" name="Seller.Country" placeholder="Seller Country" />
+            <input type="text" name="Seller.BankName" placeholder="Seller Bank Name" />
+            <input type="text" name="Seller.BankIBAN" placeholder="Seller Bank IBAN" />
+            <input type="text" name="Seller.BankBIC_Swift" placeholder="Seller Bank BIC/Swift" />
+        </dd>
+        <dt>Positions</dt>
+        @for (int i = 0; i < 3; i++)
+        {
+            <dd>Position @(i)</dd>
+            <dt>
+                <input type="text" name="Position.@(i).Description" placeholder="Description" />
+                <input type="number" name="Position.@(i).Count" placeholder="Count" step="0.1" min="0" />
+                <input type="number" name="Position.@(i).Price" placeholder="Price" min="0" step="0.01" />
+            </dt>
+        }
+        <dd>Currency</dd>
+        <dt>
+            @{
+                Html.EnumSelect<Currency>("Currency", Currency.USD);
+            }
+        </dt>
+    </dl>
+    <input type="submit" value="Create" />
+</form>

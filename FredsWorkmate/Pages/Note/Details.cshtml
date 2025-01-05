@@ -1,12 +1,9 @@
 ﻿@page "{id}"
 @using FredsWorkmate.Database.Models
-@using FredsWorkmate.Util
+@using FredsWorkmate.Util.HtmlHelperExtensions
 @model NoteDetails
 @{
     ViewData["Title"] = "Details Of Note";
     Html.EntityDetails<Note>(Model.Entity);
+    Html.DetailsNavigation(Model.Entity.Id);
 }
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.Entity.Id">Edit</a> |
-    <a asp-page="./Index">Back to List</a>
-</div>
