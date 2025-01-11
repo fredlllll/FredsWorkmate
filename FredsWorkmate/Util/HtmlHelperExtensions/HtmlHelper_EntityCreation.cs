@@ -20,17 +20,18 @@ namespace FredsWorkmate.Util.HtmlHelperExtensions
             {
                 if (p.PropertyType.IsGenericType(typeof(ICollection<>)))
                 {
-                    continue; // lists dont make sense in create
+                    continue; // lists dont make sense in create, skip them
                 }
                 writer.WriteLine($"  <dt>{p.Name}</dt>");
                 writer.Write("  <dd>");
                 if (p.PropertyType.IsAssignableTo(typeof(Model)))
                 {
+                    //property select for when type is another Model
                     htmlHelper.PropertySelect(p);
                 }
                 else
                 {
-                    writer.WriteLine(htmlHelper.TextBox(p.Name));
+                    htmlHelper.PropertyEditor(p);
                 }
                 writer.WriteLine("</dd>");
             }

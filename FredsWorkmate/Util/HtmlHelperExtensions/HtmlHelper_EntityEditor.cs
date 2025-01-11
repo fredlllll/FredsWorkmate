@@ -31,7 +31,7 @@ namespace FredsWorkmate.Util.HtmlHelperExtensions
                     }
                     else
                     {
-                        writer.WriteLine(htmlHelper.TextBox(p.Name, p.GetValue(entity)));
+                        htmlHelper.PropertyEditor(p, entity);
                     }
                     writer.WriteLine("</dd>");
                 }
