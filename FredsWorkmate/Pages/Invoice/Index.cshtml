@@ -4,6 +4,6 @@
 @model InvoiceIndex
 @{
     ViewData["Title"] = "Invoices";
-    Html.EntityCreationForm<Invoice>();
+    <a href="/Invoice/Create">Create New Invoice</a>
     Html.EntityTable<Invoice>(Model.db.Invoices);
 }

@@ -19,6 +19,10 @@ namespace FredsWorkmate.Util.HtmlHelperExtensions
 
             foreach (var p in properties)
             {
+                if (p.PropertyType.IsGenericType(typeof(ICollection<>)))
+                {
+                    continue; // lists dont make sense in table
+                }
                 writer.WriteLine($"    <th>{p.Name}</th>");
             }
 

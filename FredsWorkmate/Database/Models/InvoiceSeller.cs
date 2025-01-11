@@ -2,6 +2,7 @@
 {
     public class InvoiceSeller : Model
     {
+        public required Invoice Invoice { get; set; }
         public required string CompanyName { get; set; }
         public required string ContactName { get; set; }
         public required string Email { get; set; }

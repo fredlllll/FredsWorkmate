@@ -41,6 +41,7 @@ namespace FredsWorkmate.Pages.Invoice
 
             InvoiceBuyer buyer = new()
             {
+                Invoice=null!,
                 Id = db.GetNewId<InvoiceBuyer>(),
                 ContactName = req.Form["Buyer.ContactName"].First<string>(),
                 CompanyName = req.Form["Buyer.CompanyName"].First<string>(),
@@ -62,6 +63,7 @@ namespace FredsWorkmate.Pages.Invoice
 
             InvoiceSeller seller = new()
             {
+                Invoice = null!,
                 Id = db.GetNewId<InvoiceSeller>(),
                 ContactName = req.Form["Seller.ContactName"].First<string>(),
                 CompanyName = req.Form["Seller.CompanyName"].First<string>(),
@@ -106,6 +108,8 @@ namespace FredsWorkmate.Pages.Invoice
                 Seller = seller,
                 Currency = Enum.Parse<Currency>(currency)
             };
+            seller.Invoice = invoice;
+            buyer.Invoice = invoice;
 
             db.Add(buyer);
             db.Add(seller);

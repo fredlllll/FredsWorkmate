@@ -14,7 +14,9 @@ namespace FredsWorkmate.Database
         public DbSet<CompanyInformation> CompanyInformations { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceBuyer> InvoiceBuyers { get; set; }
         public DbSet<InvoicePosition> InvoicePositions { get; set; }
+        public DbSet<InvoiceSeller> InvoiceSellers { get; set; }
         public DbSet<Note> Notes { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<TrackedTime> TrackedTimes { get; set; }
@@ -26,10 +28,16 @@ namespace FredsWorkmate.Database
             modelBuilder.Entity<CompanyInformation>().ToTable(nameof(CompanyInformations));
             modelBuilder.Entity<Customer>().ToTable(nameof(Customers));
             modelBuilder.Entity<Invoice>().ToTable(nameof(Invoices));
+            modelBuilder.Entity<InvoiceBuyer>().ToTable(nameof(InvoiceBuyers));
             modelBuilder.Entity<InvoicePosition>().ToTable(nameof(InvoicePositions));
+            modelBuilder.Entity<InvoiceSeller>().ToTable(nameof(InvoiceSellers));
             modelBuilder.Entity<Note>().ToTable(nameof(Notes));
             modelBuilder.Entity<Project>().ToTable(nameof(Projects));
             modelBuilder.Entity<TrackedTime>().ToTable(nameof(TrackedTimes));
+
+            modelBuilder.Entity<Invoice>().HasOne(x => x.Seller).WithOne(x => x.Invoice).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Invoice>().HasOne(x => x.Buyer).WithOne(x => x.Invoice).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Invoice>().HasMany(x => x.Positions).WithOne(x => x.Invoice).OnDelete(DeleteBehavior.Cascade);
         }
 
         public IQueryable GetEntityDbSet(Type t)
