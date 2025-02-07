@@ -1,6 +1,7 @@
 ﻿using FredsWorkmate.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.Rendering;
 
@@ -11,13 +12,17 @@ namespace FredsWorkmate.Pages.Invoice
     public class InvoicePdf : ControllerBase
     {
         readonly DatabaseContext db;
+        readonly IStringLocalizer<DocumentGeneration.Invoice> localizer;
 
-        public InvoicePdf(DatabaseContext db) { this.db = db; }
+        public InvoicePdf(DatabaseContext db ,IStringLocalizer<DocumentGeneration.Invoice> localizer) {
+            this.db = db; 
+            this.localizer = localizer;
+        }
 
         [HttpGet("{id}/{language}")]
         public IActionResult OnGet(string id, string language)
         {
-            var generator = new DocumentGeneration.Invoice(db,id, language);
+            var generator = new DocumentGeneration.Invoice(db, localizer, id, language);
             var document = generator.Create();
 
             PdfDocumentRenderer renderer = new PdfDocumentRenderer();

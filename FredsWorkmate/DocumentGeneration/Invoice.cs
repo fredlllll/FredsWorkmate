@@ -2,6 +2,7 @@
 using FredsWorkmate.Database.Models;
 using FredsWorkmate.Util;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
 using System.Globalization;
@@ -11,6 +12,7 @@ namespace FredsWorkmate.DocumentGeneration
     public class Invoice
     {
         private readonly DatabaseContext db;
+        private readonly IStringLocalizer<Invoice> localizer;
         private readonly string id;
         private readonly string language;
 
@@ -29,29 +31,32 @@ namespace FredsWorkmate.DocumentGeneration
         InvoiceData? data;
 
 
-        public Invoice(DatabaseContext db, string id, string language)
+        public Invoice(DatabaseContext db, IStringLocalizer<Invoice> localizer, string id, string language)
         {
             this.db = db;
+            this.localizer = localizer;
             this.id = id;
             this.language = language;
             switch (language)
             {
                 case "de":
-                    cultureInfo = CultureInfo.CurrentCulture;
+                    cultureInfo = CultureInfo.GetCultureInfo("de-DE");
                     break;
                 case "en":
-                    cultureInfo = CultureInfo.InvariantCulture;
+                    cultureInfo = CultureInfo.GetCultureInfo("en-US");
                     break;
                 default:
                     cultureInfo = CultureInfo.InvariantCulture;
                     break;
             }
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
 
             document = new Document
             {
                 Info =
                 {
-                    Title = "Invoice "+id,
+                    Title = localizer["Invoice"]+" "+id,
                     Author = "Freds Workmate",
                 }
             };
@@ -63,6 +68,9 @@ namespace FredsWorkmate.DocumentGeneration
 
         public Document Create()
         {
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
+
             LoadData();
             AddHeader();
             AddContent();
@@ -123,22 +131,22 @@ namespace FredsWorkmate.DocumentGeneration
             row1.Cells[0].AddParagraph($"{buyer.ContactName}\n{buyer.CompanyName}\n{buyer.Email}");
             row1.Height = "16pt";
 
-            row1.Cells[1].AddParagraph("Invoice Number");
+            row1.Cells[1].AddParagraph(localizer["Invoice Number"]);
             row1.Cells[1].Format.Alignment = ParagraphAlignment.Right;
             row1.Cells[2].AddParagraph(invoice.InvoiceNumber);
             row1.Cells[2].Format.Alignment = ParagraphAlignment.Right;
 
             var row2 = topTable.AddRow();
 
-            row2.Cells[1].AddParagraph("Invoice Date");
+            row2.Cells[1].AddParagraph(localizer["Invoice Date"]);
             row2.Cells[1].Format.Alignment = ParagraphAlignment.Right;
-            row2.Cells[2].AddParagraph($"{invoice.InvoiceDate.Day}{Util.Util.GetDaySuffix(invoice.InvoiceDate.Day)}" + invoice.InvoiceDate.ToString(" MMMM yyyy", this.cultureInfo));
+            row2.Cells[2].AddParagraph(invoice.InvoiceDate.ToString("d. MMMM yyyy", cultureInfo));
             row2.Cells[2].Format.Alignment = ParagraphAlignment.Right;
 
             var p = section.AddParagraph("");
             p.Format.Font.Size = 16;
 
-            var invoiceHeading = section.AddParagraph("Invoice");
+            var invoiceHeading = section.AddParagraph(localizer["Invoice"]);
             invoiceHeading.Format.Font.Size = 18;
             invoiceHeading.Format.Font.Bold = true;
             invoiceHeading.Format.SpaceAfter = "10pt";
@@ -161,10 +169,10 @@ namespace FredsWorkmate.DocumentGeneration
             // Add header row
             Row headerRow = itemTable.AddRow();
             //headerRow.Shading.Color = Colors.LightGray; // Light gray background
-            headerRow.Cells[0].AddParagraph("Description");
-            headerRow.Cells[1].AddParagraph("Count");
-            headerRow.Cells[2].AddParagraph("Price/Pc");
-            headerRow.Cells[3].AddParagraph("Total");
+            headerRow.Cells[0].AddParagraph(localizer["Description"]);
+            headerRow.Cells[1].AddParagraph(localizer["Count"]);
+            headerRow.Cells[2].AddParagraph(localizer["Price/Pc"]);
+            headerRow.Cells[3].AddParagraph(localizer["Total"]);
 
             var currency = invoice.Currency.ToString();
 
@@ -191,7 +199,7 @@ namespace FredsWorkmate.DocumentGeneration
             totalTable.Columns[1].Format.Alignment = ParagraphAlignment.Right;
 
             row1 = totalTable.AddRow();
-            row1.Cells[0].AddParagraph("Total:");
+            row1.Cells[0].AddParagraph(localizer["Total"] + ":");
             row1.Cells[1].AddParagraph(string.Create(cultureInfo, $"{currency} {totalPrice:F2}"));
 
             if (buyer.VATRate > 0)
@@ -200,18 +208,18 @@ namespace FredsWorkmate.DocumentGeneration
                 decimal totalWithVat = totalPrice + vat;
 
                 row1 = totalTable.AddRow();
-                row1.Cells[0].AddParagraph(string.Create(cultureInfo, $"VAT {buyer.VATRate * 100:F2}%:"));
+                row1.Cells[0].AddParagraph(string.Create(cultureInfo, $"{localizer["VAT"]} {buyer.VATRate * 100:F2}%:"));
                 row1.Cells[1].AddParagraph(string.Create(cultureInfo, $"{currency} {vat:F2}"));
 
                 row2 = totalTable.AddRow();
-                row1.Cells[0].AddParagraph("Total+VAT:");
+                row1.Cells[0].AddParagraph(localizer["Total+VAT"] + ":");
                 row1.Cells[1].AddParagraph(string.Create(cultureInfo, $"{currency} {totalWithVat:F2}"));
             }
             else
             {
                 p = section.AddParagraph("");
                 p.Format.Font.Size = 16;
-                section.AddParagraph("No VAT added, due to work done for a company based in a non EU country");
+                section.AddParagraph(localizer["No VAT added, due to work done for a company based in a non EU country"]);
             }
         }
 
@@ -222,11 +230,17 @@ namespace FredsWorkmate.DocumentGeneration
                 throw new InvalidOperationException();
             }
 
-            Paragraph footer = section.Footers.Primary.AddParagraph("Thank you for your business!");
-            footer.Format.Font.Size = 10;
-            footer.Format.Alignment = ParagraphAlignment.Center;
-            footer.Format.SpaceBefore = "10pt";
+            var seller = data.invoiceSeller;
 
+            var footer = section.Footers.Primary.AddTable();
+            footer.Format.Font.Size = 10;
+            footer.AddColumn("6cm");
+            footer.AddColumn("6cm");
+            footer.AddColumn("5cm");
+            var row = footer.AddRow();
+            row.Cells[0].AddParagraph($"{seller.ContactName}\n{seller.Street} {seller.HouseNumber}\n{seller.PostalCode} {seller.City}\n\nEmail: {seller.Email}");
+            row.Cells[1].AddParagraph($"{localizer["Bank Information"]}:\n{localizer["Bank"]}: {seller.BankName}\n{localizer["IBAN"]}: {seller.BankIBAN}\n{localizer["BIC/Swift"]}: {seller.BankBIC_Swift}");
+            row.Cells[2].AddParagraph($"{localizer["VAT IdNr."]}:\n TODO");
         }
     }
 }

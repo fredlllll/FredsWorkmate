@@ -17,6 +17,7 @@ namespace FredsWorkmate
             });
             builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(DatabaseContext.GetConnectionString()));
             builder.Services.AddControllers();
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
             var app = builder.Build();
 
