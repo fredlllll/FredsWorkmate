@@ -16,6 +16,7 @@ namespace FredsWorkmate
                 //extra routes go here
             });
             builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(DatabaseContext.GetConnectionString()));
+            builder.Services.AddControllers();
 
             var app = builder.Build();
 
@@ -40,12 +41,10 @@ namespace FredsWorkmate
             }
 
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.MapRazorPages();
+            app.MapControllers();
 
             app.Run();
         }

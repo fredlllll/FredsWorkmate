@@ -35,8 +35,16 @@ namespace FredsWorkmate.Database
             modelBuilder.Entity<Project>().ToTable(nameof(Projects));
             modelBuilder.Entity<TrackedTime>().ToTable(nameof(TrackedTimes));
 
-            modelBuilder.Entity<Invoice>().HasOne(x => x.Seller).WithOne(x => x.Invoice).OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<Invoice>().HasOne(x => x.Buyer).WithOne(x => x.Invoice).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Invoice>()
+                .HasOne(x => x.Seller).WithOne(x => x.Invoice)
+                .HasPrincipalKey<Invoice>(i => i.Id)
+                .HasForeignKey<InvoiceSeller>(s => s.Id)
+                .OnDelete(DeleteBehavior.Cascade).IsRequired();
+            modelBuilder.Entity<Invoice>()
+                .HasOne(x => x.Buyer).WithOne(x => x.Invoice)
+                .HasPrincipalKey<Invoice>(i => i.Id)
+                .HasForeignKey<InvoiceBuyer>(s => s.Id)
+                .OnDelete(DeleteBehavior.Cascade).IsRequired();
             modelBuilder.Entity<Invoice>().HasMany(x => x.Positions).WithOne(x => x.Invoice).OnDelete(DeleteBehavior.Cascade);
         }
 
