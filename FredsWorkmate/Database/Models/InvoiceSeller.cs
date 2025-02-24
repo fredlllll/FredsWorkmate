@@ -14,6 +14,14 @@
         public required string BankName { get; set; }
         public required string BankIBAN { get; set; }
         public required string BankBIC_Swift { get; set; }
+        /// <summary>
+        /// fiscal number, tax number
+        /// </summary>
+        public required string FC { get; set; } = "";
+        /// <summary>
+        /// VAT number, ust.Id
+        /// </summary>
+        public required string VA { get; set; } = "";
 
         public override string ToString()
         {

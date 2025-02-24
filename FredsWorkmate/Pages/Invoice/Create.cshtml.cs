@@ -1,6 +1,7 @@
 using FredsWorkmate.Database;
 using FredsWorkmate.Database.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
 namespace FredsWorkmate.Pages.Invoice
@@ -41,22 +42,33 @@ namespace FredsWorkmate.Pages.Invoice
 
             InvoiceBuyer buyer = new()
             {
-                Invoice=null!,
+                Invoice = null!,
                 Id = db.GetNewId<InvoiceBuyer>(),
                 ContactName = req.Form["Buyer.ContactName"].First<string>(),
                 CompanyName = req.Form["Buyer.CompanyName"].First<string>(),
                 Email = req.Form["Buyer.Email"].First<string>(),
-                VATRate = decimal.Parse(req.Form["Buyer.VATRate"].First<string>(), CultureInfo.InvariantCulture)
+                Street = req.Form["Buyer.Street"].First<string>(),
+                HouseNumber = req.Form["Buyer.HouseNumber"].First<string>(),
+                PostalCode = req.Form["Buyer.PostalCode"].First<string>(),
+                City = req.Form["Buyer.City"].First<string>(),
+                Country = req.Form["Buyer.Country"].First<string>(),
+                VATRate = decimal.Parse(req.Form["Buyer.VATRate"].First<string>(), CultureInfo.InvariantCulture),
             };
             string buyerId = req.Form["Buyer"].First<string>();
             if (!string.IsNullOrEmpty(buyerId))
             {
-                var buyerCustomer = db.Customers.Find(buyerId);
+                var buyerCustomer = db.Customers.Include(x => x.Address).Where(x => x.Id == buyerId).First();
                 if (buyerCustomer != null)
                 {
+                    db.LoadReferences(buyerCustomer);
                     buyer.ContactName = buyerCustomer.ContactName;
                     buyer.CompanyName = buyerCustomer.CompanyName;
                     buyer.Email = buyerCustomer.Email;
+                    buyer.Street = buyerCustomer.Address.Street;
+                    buyer.HouseNumber = buyerCustomer.Address.HouseNumber;
+                    buyer.PostalCode = buyerCustomer.Address.PostalCode;
+                    buyer.City = buyerCustomer.Address.City;
+                    buyer.Country = buyerCustomer.Address.Country;
                     buyer.VATRate = buyerCustomer.VATRate;
                 }
             }
@@ -76,11 +88,13 @@ namespace FredsWorkmate.Pages.Invoice
                 BankName = req.Form["Seller.BankName"].First<string>(),
                 BankIBAN = req.Form["Seller.BankIBAN"].First<string>(),
                 BankBIC_Swift = req.Form["Seller.BankBIC_Swift"].First<string>(),
+                FC = req.Form["Seller.FC"].First<string>(),
+                VA = req.Form["Seller.VA"].First<string>(),
             };
             string sellerId = req.Form["Seller"].First<string>();
             if (!string.IsNullOrEmpty(sellerId))
             {
-                var sellerCompany = db.CompanyInformations.Find(sellerId);
+                var sellerCompany = db.CompanyInformations.Include(x => x.Address).Include(x => x.BankInformation).Where(x => x.Id == sellerId).First();
                 if (sellerCompany != null)
                 {
                     db.LoadReferences(sellerCompany);
@@ -95,6 +109,8 @@ namespace FredsWorkmate.Pages.Invoice
                     seller.BankName = sellerCompany.BankInformation.BankName;
                     seller.BankIBAN = sellerCompany.BankInformation.IBAN;
                     seller.BankBIC_Swift = sellerCompany.BankInformation.BIC_Swift;
+                    seller.FC = sellerCompany.FC;
+                    seller.VA = sellerCompany.VA;
                 }
             }
 

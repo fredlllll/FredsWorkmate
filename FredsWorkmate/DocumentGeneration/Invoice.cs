@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Tables;
+using PdfSharp.Pdf;
+using s2industries.ZUGFeRD;
 using System.Globalization;
 
 namespace FredsWorkmate.DocumentGeneration
@@ -14,7 +16,7 @@ namespace FredsWorkmate.DocumentGeneration
         private readonly DatabaseContext db;
         private readonly IStringLocalizer<Invoice> localizer;
         private readonly string id;
-        private readonly string language;
+        //private readonly string language;
 
         private readonly Document document;
         private readonly Section section;
@@ -36,19 +38,13 @@ namespace FredsWorkmate.DocumentGeneration
             this.db = db;
             this.localizer = localizer;
             this.id = id;
-            this.language = language;
-            switch (language)
+            //this.language = language;
+            cultureInfo = language switch
             {
-                case "de":
-                    cultureInfo = CultureInfo.GetCultureInfo("de-DE");
-                    break;
-                case "en":
-                    cultureInfo = CultureInfo.GetCultureInfo("en-US");
-                    break;
-                default:
-                    cultureInfo = CultureInfo.InvariantCulture;
-                    break;
-            }
+                "de" => CultureInfo.GetCultureInfo("de-DE"),
+                "en" => CultureInfo.GetCultureInfo("en-US"),
+                _ => CultureInfo.InvariantCulture,
+            };
             CultureInfo.CurrentCulture = cultureInfo;
             CultureInfo.CurrentUICulture = cultureInfo;
 
@@ -75,6 +71,8 @@ namespace FredsWorkmate.DocumentGeneration
             AddHeader();
             AddContent();
             AddFooter();
+
+            AddXRechnung();
 
             return document;
         }
@@ -212,8 +210,8 @@ namespace FredsWorkmate.DocumentGeneration
                 row1.Cells[1].AddParagraph(string.Create(cultureInfo, $"{currency} {vat:F2}"));
 
                 row2 = totalTable.AddRow();
-                row1.Cells[0].AddParagraph(localizer["Total+VAT"] + ":");
-                row1.Cells[1].AddParagraph(string.Create(cultureInfo, $"{currency} {totalWithVat:F2}"));
+                row2.Cells[0].AddParagraph(localizer["Total+VAT"] + ":");
+                row2.Cells[1].AddParagraph(string.Create(cultureInfo, $"{currency} {totalWithVat:F2}"));
             }
             else
             {
@@ -240,7 +238,67 @@ namespace FredsWorkmate.DocumentGeneration
             var row = footer.AddRow();
             row.Cells[0].AddParagraph($"{seller.ContactName}\n{seller.Street} {seller.HouseNumber}\n{seller.PostalCode} {seller.City}\n\nEmail: {seller.Email}");
             row.Cells[1].AddParagraph($"{localizer["Bank Information"]}:\n{localizer["Bank"]}: {seller.BankName}\n{localizer["IBAN"]}: {seller.BankIBAN}\n{localizer["BIC/Swift"]}: {seller.BankBIC_Swift}");
-            row.Cells[2].AddParagraph($"{localizer["VAT IdNr."]}:\n TODO");
+            row.Cells[2].AddParagraph($"{localizer["VAT IdNr."]}:\n {data.invoiceSeller.VA}");
+        }
+
+        void AddXRechnung()
+        {
+            if (data == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            InvoiceDescriptor invoiceDoc = InvoiceDescriptor.CreateInvoice(data.invoice.InvoiceNumber, data.invoice.InvoiceDate.ToDateTime(TimeOnly.MinValue), CurrencyUtil.ToCurrencyCodes(data.invoice.Currency));
+
+            invoiceDoc.Type = InvoiceType.Invoice; //TODO: make this configurable
+            invoiceDoc.ActualDeliveryDate = invoiceDoc.InvoiceDate;
+
+            invoiceDoc.Buyer = new Party();
+            invoiceDoc.Buyer.Name = data.invoiceBuyer.CompanyName;
+            invoiceDoc.Buyer.ContactName = data.invoiceBuyer.ContactName;
+            invoiceDoc.Buyer.Street = data.invoiceBuyer.Street + " " + data.invoiceBuyer.HouseNumber;
+            invoiceDoc.Buyer.Postcode = data.invoiceBuyer.PostalCode;
+            invoiceDoc.Buyer.City = data.invoiceBuyer.City;
+            invoiceDoc.Buyer.Country = Enum.Parse<CountryCodes>(data.invoiceBuyer.Country);
+            invoiceDoc.BuyerElectronicAddress = new ElectronicAddress();
+            invoiceDoc.BuyerElectronicAddress.Address = data.invoiceBuyer.Email;
+            invoiceDoc.BuyerElectronicAddress.ElectronicAddressSchemeID = ElectronicAddressSchemeIdentifiers.EM;
+
+            invoiceDoc.Seller = new Party();
+            invoiceDoc.Seller.Name = data.invoiceSeller.CompanyName;
+            invoiceDoc.Seller.ContactName = data.invoiceSeller.ContactName;
+            invoiceDoc.Seller.Street = data.invoiceSeller.Street + " " + data.invoiceSeller.HouseNumber;
+            invoiceDoc.Seller.Postcode = data.invoiceSeller.PostalCode;
+            invoiceDoc.Seller.City = data.invoiceSeller.City;
+            invoiceDoc.Seller.Country = Enum.Parse<CountryCodes>(data.invoiceSeller.Country);
+            invoiceDoc.Seller.ID = new GlobalID(GlobalIDSchemeIdentifiers.Unknown, "TODO Seller Id in buyers system");
+            invoiceDoc.SellerContact = new Contact();
+            invoiceDoc.SellerContact.Name = data.invoiceSeller.ContactName;
+            invoiceDoc.SellerContact.EmailAddress = data.invoiceSeller.Email;
+            invoiceDoc.SellerContact.PhoneNo = "0190666666"; //for some reason phone number is mandatory, but who uses phones anymore?
+            invoiceDoc.SellerElectronicAddress = new ElectronicAddress();
+            invoiceDoc.SellerElectronicAddress.Address = data.invoiceSeller.Email;
+            invoiceDoc.SellerElectronicAddress.ElectronicAddressSchemeID = ElectronicAddressSchemeIdentifiers.EM;
+            invoiceDoc.AddSellerTaxRegistration(data.invoiceSeller.FC, TaxRegistrationSchemeID.FC);
+            invoiceDoc.AddSellerTaxRegistration(data.invoiceSeller.VA, TaxRegistrationSchemeID.VA);
+
+            decimal total = 0;
+            foreach (var pos in data.invoicePositions)
+            {
+                var lineTotal = pos.Price * pos.Count;
+                total += lineTotal;
+                invoiceDoc.AddTradeLineItem(pos.Description, pos.Price, unitCode: QuantityCodes.HUR, unitQuantity: pos.Count);
+            }
+            if (data.invoiceBuyer.VATRate > 0)
+            {
+                invoiceDoc.AddApplicableTradeTax(total, data.invoiceBuyer.VATRate * 100, total * data.invoiceBuyer.VATRate, TaxTypes.VAT);
+            }
+
+            // Save the XML
+            var xmlPath = Path.Combine(Path.GetTempPath(), $" {data.invoice.InvoiceNumber}.xml");
+            invoiceDoc.Save(xmlPath, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.CII);
+
+            //TODO: actually attach the fucking file, but i cant find how anywhere
         }
     }
 }

@@ -10,7 +10,7 @@ namespace FredsWorkmate.Database.Models
         public required Address Address { get; set; }
         public required CompanyInformation Company { get; set; }
         public required decimal VATRate { get; set; }
-        public ICollection<Note> Notes { get; set; } = new List<Note>();
+        public ICollection<Note> Notes { get; set; } = [];
 
         public override string ToString()
         {

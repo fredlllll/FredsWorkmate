@@ -17,6 +17,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
     <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
     <PackageReference Include="UUIDNext" Version="4.0.0" />
+    <PackageReference Include="ZUGFeRD-csharp" Version="17.0.0" />
   </ItemGroup>
 
   <ItemGroup>

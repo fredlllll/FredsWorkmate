@@ -10,6 +10,14 @@ namespace FredsWorkmate.Database.Models
         public required string Email { get; set; }
         public required Address Address { get; set; }
         public required BankInformation BankInformation { get; set; }
+        /// <summary>
+        /// fiscal number, tax number
+        /// </summary>
+        public required string FC { get; set; } = "";
+        /// <summary>
+        /// VAT number, ust.Id
+        /// </summary>
+        public required string VA { get; set; } = "";
 
         public override string ToString()
         {

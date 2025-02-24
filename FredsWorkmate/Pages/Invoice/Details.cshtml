@@ -8,4 +8,10 @@
     <h3>Positions:</h3>
     Html.EntityTable<InvoicePosition>(Model.db.InvoicePositions.Where(x => x.Invoice == Model.Entity));
     Html.DetailsNavigation(Model.Entity.Id);
+    <a href="../Pdf/@(Model.Entity.Id)/@{
+if(Model.Entity.Currency == Database.Currency.EUR){
+WriteLiteral("de");
+}else{
+WriteLiteral("en");
+}}">PDF</a>
 }

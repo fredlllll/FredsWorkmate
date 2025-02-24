@@ -25,10 +25,12 @@ namespace FredsWorkmate.Pages.Invoice
             var generator = new DocumentGeneration.Invoice(db, localizer, id, language);
             var document = generator.Create();
 
-            PdfDocumentRenderer renderer = new PdfDocumentRenderer();
-            renderer.Document = document;
+            PdfDocumentRenderer renderer = new()
+            {
+                Document = document
+            };
             renderer.RenderDocument();
-            MemoryStream ms = new MemoryStream();
+            MemoryStream ms = new();
             renderer.Save(ms, false);
             ms.Position = 0;
 
