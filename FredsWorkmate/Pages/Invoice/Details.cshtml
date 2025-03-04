@@ -1,6 +1,7 @@
 ﻿@page "{id}"
 @using FredsWorkmate.Database.Models
 @using FredsWorkmate.Util.HtmlHelperExtensions
+@using FredsWorkmate.Util
 @model InvoiceDetails
 @{
     ViewData["Title"] = "Details Of Invoice";
@@ -9,7 +10,7 @@
     Html.EntityTable<InvoicePosition>(Model.db.InvoicePositions.Where(x => x.Invoice == Model.Entity));
     Html.DetailsNavigation(Model.Entity.Id);
     <a href="../Pdf/@(Model.Entity.Id)/@{
-if(Model.Entity.Currency == Database.Currency.EUR){
+if(Model.Entity.Currency == CurrencyCode.EUR){
 WriteLiteral("de");
 }else{
 WriteLiteral("en");

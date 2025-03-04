@@ -14,7 +14,7 @@ namespace FredsWorkmate.Util
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public static string GetDaySuffix(int day)
+        public static string GetEnglishDaySuffix(int day)
         {
             switch (day)
             {

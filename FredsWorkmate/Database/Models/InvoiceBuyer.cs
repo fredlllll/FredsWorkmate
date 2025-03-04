@@ -1,4 +1,6 @@
-﻿namespace FredsWorkmate.Database.Models
+﻿using FredsWorkmate.Util;
+
+namespace FredsWorkmate.Database.Models
 {
     public class InvoiceBuyer : Model
     {
@@ -10,7 +12,7 @@
         public required string HouseNumber { get; set; } = "";
         public required string PostalCode { get; set; } = "";
         public required string City { get; set; } = "";
-        public required string Country { get; set; } = "";
+        public required CountryCode Country { get; set; }
         public required decimal VATRate { get; set; }
 
         public override string ToString()

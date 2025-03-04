@@ -2,6 +2,7 @@
 @using FredsWorkmate.Database
 @using FredsWorkmate.Database.Models
 @using FredsWorkmate.Util.HtmlHelperExtensions
+@using FredsWorkmate.Util
 @model InvoiceCreate
 @{
     ViewData["Title"] = "Create Invoice";
@@ -57,7 +58,7 @@
         <dd>Currency</dd>
         <dt>
             @{
-                Html.EnumSelect<Currency>("Currency", Currency.USD);
+                Html.EnumSelect<CurrencyCode>("Currency", CurrencyCode.USD);
             }
         </dt>
     </dl>

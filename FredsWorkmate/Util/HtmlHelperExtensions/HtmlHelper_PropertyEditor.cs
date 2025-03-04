@@ -19,6 +19,10 @@ namespace FredsWorkmate.Util.HtmlHelperExtensions
             {
                 editor(writer, property, entityInstance);
             }
+            else if (property.PropertyType.IsEnum)
+            {
+                htmlHelper.EnumSelect(t, property.Name, property.GetValue(entityInstance));
+            }
             else
             {
                 //Default to textbox

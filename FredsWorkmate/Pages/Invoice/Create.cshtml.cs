@@ -1,5 +1,6 @@
 using FredsWorkmate.Database;
 using FredsWorkmate.Database.Models;
+using FredsWorkmate.Util;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -51,7 +52,7 @@ namespace FredsWorkmate.Pages.Invoice
                 HouseNumber = req.Form["Buyer.HouseNumber"].First<string>(),
                 PostalCode = req.Form["Buyer.PostalCode"].First<string>(),
                 City = req.Form["Buyer.City"].First<string>(),
-                Country = req.Form["Buyer.Country"].First<string>(),
+                Country = Enum.Parse<CountryCode>(req.Form["Buyer.Country"].First<string>()),
                 VATRate = decimal.Parse(req.Form["Buyer.VATRate"].First<string>(), CultureInfo.InvariantCulture),
             };
             string buyerId = req.Form["Buyer"].First<string>();
@@ -84,7 +85,7 @@ namespace FredsWorkmate.Pages.Invoice
                 HouseNumber = req.Form["Seller.HouseNumber"].First<string>(),
                 PostalCode = req.Form["Seller.PostalCode"].First<string>(),
                 City = req.Form["Seller.City"].First<string>(),
-                Country = req.Form["Seller.Country"].First<string>(),
+                Country = Enum.Parse<CountryCode>(req.Form["Seller.Country"].First<string>()),
                 BankName = req.Form["Seller.BankName"].First<string>(),
                 BankIBAN = req.Form["Seller.BankIBAN"].First<string>(),
                 BankBIC_Swift = req.Form["Seller.BankBIC_Swift"].First<string>(),
@@ -122,7 +123,7 @@ namespace FredsWorkmate.Pages.Invoice
                 InvoiceDate = invoiceDate,
                 Buyer = buyer,
                 Seller = seller,
-                Currency = Enum.Parse<Currency>(currency)
+                Currency = Enum.Parse<CurrencyCode>(currency)
             };
             seller.Invoice = invoice;
             buyer.Invoice = invoice;

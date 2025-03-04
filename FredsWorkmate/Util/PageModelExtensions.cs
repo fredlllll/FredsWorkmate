@@ -2,11 +2,14 @@
 using FredsWorkmate.Database.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Globalization;
+using System.Reflection;
 
 namespace FredsWorkmate.Util
 {
     public static class PageModelExtensions
     {
+        public static readonly Dictionary<Type, Func<PropertyInfo, string?, object?>> typeParsers = new();
+
         public static T CreateEntity<T>(this PageModel page) where T : Model
         {
             DatabaseContext db = page.HttpContext.RequestServices.GetRequiredService<DatabaseContext>();
@@ -24,8 +27,24 @@ namespace FredsWorkmate.Util
                     var val = db.Find(p.PropertyType, value);
                     p.SetValue(instance, val);
                 }
+                else if (typeParsers.TryGetValue(p.PropertyType, out var parser))
+                {
+                    p.SetValue(instance, parser.Invoke(p, value));
+                }
+                else if (p.PropertyType.IsEnum)
+                {
+                    if (value == null)
+                    {
+                        p.SetValue(instance, 0);
+                    }
+                    else
+                    {
+                        p.SetValue(instance, Enum.Parse(p.PropertyType, value));
+                    }
+                }
                 else
                 {
+
                     p.SetValue(instance, Convert.ChangeType(value, p.PropertyType, CultureInfo.InvariantCulture));
                 }
             }
@@ -49,12 +68,51 @@ namespace FredsWorkmate.Util
                     var val = db.Find(p.PropertyType, value);
                     p.SetValue(instance, val);
                 }
+                else if (typeParsers.TryGetValue(p.PropertyType, out var parser))
+                {
+                    p.SetValue(instance, parser.Invoke(p, value));
+                }
+                else if (p.PropertyType.IsEnum)
+                {
+                    if (value == null)
+                    {
+                        p.SetValue(instance, 0);
+                    }
+                    else
+                    {
+                        p.SetValue(instance, Enum.Parse(p.PropertyType, value));
+                    }
+                }
                 else
                 {
                     p.SetValue(instance, Convert.ChangeType(value, p.PropertyType, CultureInfo.InvariantCulture));
                 }
             }
             return instance;
+        }
+
+        static object? DateTimeParser(PropertyInfo p, string? value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            return DateTime.Parse(value, CultureInfo.InvariantCulture);
+        }
+
+        static object? DateOnlyParser(PropertyInfo p, string? value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            return DateOnly.Parse(value, CultureInfo.InvariantCulture);
+        }
+
+        static PageModelExtensions()
+        {
+            typeParsers[typeof(DateTime)] = DateTimeParser;
+            typeParsers[typeof(DateOnly)] = DateOnlyParser;
         }
     }
 }

@@ -126,7 +126,7 @@ namespace FredsWorkmate.DocumentGeneration
 
             var row1 = topTable.AddRow();
             row1.Cells[0].MergeDown = 1;
-            row1.Cells[0].AddParagraph($"{buyer.ContactName}\n{buyer.CompanyName}\n{buyer.Email}");
+            row1.Cells[0].AddParagraph($"{buyer.CompanyName}\n{buyer.ContactName}\n{Address.Format("",buyer.Street,buyer.HouseNumber,buyer.PostalCode,buyer.City,buyer.Country)}");
             row1.Height = "16pt";
 
             row1.Cells[1].AddParagraph(localizer["Invoice Number"]);
@@ -233,8 +233,8 @@ namespace FredsWorkmate.DocumentGeneration
             var footer = section.Footers.Primary.AddTable();
             footer.Format.Font.Size = 10;
             footer.AddColumn("6cm");
-            footer.AddColumn("6cm");
-            footer.AddColumn("5cm");
+            footer.AddColumn("7cm");
+            footer.AddColumn("4cm");
             var row = footer.AddRow();
             row.Cells[0].AddParagraph($"{seller.ContactName}\n{seller.Street} {seller.HouseNumber}\n{seller.PostalCode} {seller.City}\n\nEmail: {seller.Email}");
             row.Cells[1].AddParagraph($"{localizer["Bank Information"]}:\n{localizer["Bank"]}: {seller.BankName}\n{localizer["IBAN"]}: {seller.BankIBAN}\n{localizer["BIC/Swift"]}: {seller.BankBIC_Swift}");
@@ -248,7 +248,7 @@ namespace FredsWorkmate.DocumentGeneration
                 throw new InvalidOperationException();
             }
 
-            InvoiceDescriptor invoiceDoc = InvoiceDescriptor.CreateInvoice(data.invoice.InvoiceNumber, data.invoice.InvoiceDate.ToDateTime(TimeOnly.MinValue), CurrencyUtil.ToCurrencyCodes(data.invoice.Currency));
+            InvoiceDescriptor invoiceDoc = InvoiceDescriptor.CreateInvoice(data.invoice.InvoiceNumber, data.invoice.InvoiceDate.ToDateTime(TimeOnly.MinValue), CurrencyCodeUtil.ToCurrencyCodes(data.invoice.Currency));
 
             invoiceDoc.Type = InvoiceType.Invoice; //TODO: make this configurable
             invoiceDoc.ActualDeliveryDate = invoiceDoc.InvoiceDate;
@@ -259,7 +259,7 @@ namespace FredsWorkmate.DocumentGeneration
             invoiceDoc.Buyer.Street = data.invoiceBuyer.Street + " " + data.invoiceBuyer.HouseNumber;
             invoiceDoc.Buyer.Postcode = data.invoiceBuyer.PostalCode;
             invoiceDoc.Buyer.City = data.invoiceBuyer.City;
-            invoiceDoc.Buyer.Country = Enum.Parse<CountryCodes>(data.invoiceBuyer.Country);
+            invoiceDoc.Buyer.Country = CountryCodeUtil.ToCountryCodes(data.invoiceBuyer.Country);
             invoiceDoc.BuyerElectronicAddress = new ElectronicAddress();
             invoiceDoc.BuyerElectronicAddress.Address = data.invoiceBuyer.Email;
             invoiceDoc.BuyerElectronicAddress.ElectronicAddressSchemeID = ElectronicAddressSchemeIdentifiers.EM;
@@ -270,7 +270,7 @@ namespace FredsWorkmate.DocumentGeneration
             invoiceDoc.Seller.Street = data.invoiceSeller.Street + " " + data.invoiceSeller.HouseNumber;
             invoiceDoc.Seller.Postcode = data.invoiceSeller.PostalCode;
             invoiceDoc.Seller.City = data.invoiceSeller.City;
-            invoiceDoc.Seller.Country = Enum.Parse<CountryCodes>(data.invoiceSeller.Country);
+            invoiceDoc.Seller.Country = CountryCodeUtil.ToCountryCodes(data.invoiceSeller.Country);
             invoiceDoc.Seller.ID = new GlobalID(GlobalIDSchemeIdentifiers.Unknown, "TODO Seller Id in buyers system");
             invoiceDoc.SellerContact = new Contact();
             invoiceDoc.SellerContact.Name = data.invoiceSeller.ContactName;
