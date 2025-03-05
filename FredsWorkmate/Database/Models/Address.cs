@@ -24,7 +24,11 @@ namespace FredsWorkmate.Database.Models
 
         public static string Format(string addressExtra, string street, string houseNumber, string postalCode, string city, CountryCode country)
         {
-            string baseAddress = $"{street} {houseNumber}\n{postalCode} {city}\n{CountryCodeUtil.ToNativeCountryName(country)}";
+            string baseAddress = $"{street} {houseNumber}\n{postalCode} {city}";
+            if (country != CountryCode.DE)
+            {
+                baseAddress += $"\n{CountryCodeUtil.ToNativeCountryName(country)}";
+            }
             if (!string.IsNullOrEmpty(addressExtra))
             {
                 return addressExtra + "\n" + baseAddress;
