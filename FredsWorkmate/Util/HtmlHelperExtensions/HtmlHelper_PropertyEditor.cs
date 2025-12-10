@@ -21,7 +21,14 @@ namespace FredsWorkmate.Util.HtmlHelperExtensions
             }
             else if (property.PropertyType.IsEnum)
             {
-                htmlHelper.EnumSelect(t, property.Name, property.GetValue(entityInstance));
+                if (entityInstance == null)
+                {
+                    htmlHelper.EnumSelect(t, property.Name);
+                }
+                else
+                {
+                    htmlHelper.EnumSelect(t, property.Name, property.GetValue(entityInstance));
+                }
             }
             else
             {

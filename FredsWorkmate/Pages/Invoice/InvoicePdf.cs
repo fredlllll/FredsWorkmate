@@ -14,8 +14,9 @@ namespace FredsWorkmate.Pages.Invoice
         readonly DatabaseContext db;
         readonly IStringLocalizer<DocumentGeneration.Invoice> localizer;
 
-        public InvoicePdf(DatabaseContext db ,IStringLocalizer<DocumentGeneration.Invoice> localizer) {
-            this.db = db; 
+        public InvoicePdf(DatabaseContext db, IStringLocalizer<DocumentGeneration.Invoice> localizer)
+        {
+            this.db = db;
             this.localizer = localizer;
         }
 
@@ -30,11 +31,20 @@ namespace FredsWorkmate.Pages.Invoice
                 Document = document
             };
             renderer.RenderDocument();
-            MemoryStream ms = new();
-            renderer.Save(ms, false);
-            ms.Position = 0;
+            var tmpPdfPath = Path.Combine(Path.GetTempPath(), $"{id}_tmp.pdf");
+            using (var fs = new FileStream(tmpPdfPath, FileMode.Create))
+            {
+                renderer.Save(fs, false);
+            }
+            var pdfPath = Path.Combine(Path.GetTempPath(), $"{id}.pdf");
+            var result = Util.Python.Venv.RunPythonFile(Util.Python.Venv.DefaultVenv, "embed_xml.py", tmpPdfPath, generator.lastXRechnungXmlPath, pdfPath);
+            if (result != 0)
+            {
+                throw new Exception("could not append xml to pdf");
+            }
 
-            return File(ms, "application/pdf");
+            var pdfStream = new FileStream(pdfPath, FileMode.Open);
+            return File(pdfStream, "application/pdf");
         }
     }
 }

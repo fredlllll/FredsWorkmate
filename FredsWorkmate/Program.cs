@@ -6,9 +6,10 @@ namespace FredsWorkmate
 {
     public class Program
     { 
-
         public static void Main(string[] args)
         {
+            Util.Python.Venv.EnsureVenvAndPackages(".venv", "pikepdf");
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.

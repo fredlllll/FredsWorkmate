@@ -13,6 +13,8 @@
         <dd><input type="text" name="InvoiceNumber" value="@(Model.ProposedInvoiceNumber)" /></dd>
         <dt>Invoice Date</dt>
         <dd><input type="date" name="InvoiceDate" value="@(Model.CurrentDate)" /></dd>
+        <dt>Delivery Date</dt>
+        <dd><input type="date" name="DeliveryDate" value="@(Model.CurrentDate)" /></dd>
         <dt>Buyer</dt>
         <dd>
             @Html.DropDownList("Buyer", Model.db.Customers.Select(x => new SelectListItem(x.CompanyName, x.Id)), "BuyerLabel");

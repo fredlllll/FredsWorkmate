@@ -162,4 +162,7 @@
   <data name="VAT IdNr." xml:space="preserve">
     <value>Umsatzsteuer-IdNr.</value>
   </data>
+  <data name="Delivery Date" xml:space="preserve">
+    <value>Lieferdatum</value>
+  </data>
 </root>

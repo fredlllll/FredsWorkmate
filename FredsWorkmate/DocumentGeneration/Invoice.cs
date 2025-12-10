@@ -32,6 +32,7 @@ namespace FredsWorkmate.DocumentGeneration
         }
         InvoiceData? data;
 
+        public string lastXRechnungXmlPath { get; set; } = string.Empty;
 
         public Invoice(DatabaseContext db, IStringLocalizer<Invoice> localizer, string id, string language)
         {
@@ -126,7 +127,7 @@ namespace FredsWorkmate.DocumentGeneration
 
             var row1 = topTable.AddRow();
             row1.Cells[0].MergeDown = 1;
-            row1.Cells[0].AddParagraph($"{buyer.CompanyName}\n{buyer.ContactName}\n{Address.Format("",buyer.Street,buyer.HouseNumber,buyer.PostalCode,buyer.City,buyer.Country)}");
+            row1.Cells[0].AddParagraph($"{buyer.CompanyName}\n{buyer.ContactName}\n{Address.Format("", buyer.Street, buyer.HouseNumber, buyer.PostalCode, buyer.City, buyer.Country)}");
             row1.Height = "16pt";
 
             row1.Cells[1].AddParagraph(localizer["Invoice Number"]);
@@ -140,6 +141,12 @@ namespace FredsWorkmate.DocumentGeneration
             row2.Cells[1].Format.Alignment = ParagraphAlignment.Right;
             row2.Cells[2].AddParagraph(invoice.InvoiceDate.ToString("d. MMMM yyyy", cultureInfo));
             row2.Cells[2].Format.Alignment = ParagraphAlignment.Right;
+
+            var row3 = topTable.AddRow();
+            row3.Cells[1].AddParagraph(localizer["Delivery Date"]);
+            row3.Cells[1].Format.Alignment = ParagraphAlignment.Right;
+            row3.Cells[2].AddParagraph(invoice.DeliveryDate.ToString("d. MMMM yyyy", cultureInfo));
+            row3.Cells[2].Format.Alignment = ParagraphAlignment.Right;
 
             var p = section.AddParagraph("");
             p.Format.Font.Size = 16;
@@ -251,7 +258,7 @@ namespace FredsWorkmate.DocumentGeneration
             InvoiceDescriptor invoiceDoc = InvoiceDescriptor.CreateInvoice(data.invoice.InvoiceNumber, data.invoice.InvoiceDate.ToDateTime(TimeOnly.MinValue), CurrencyCodeUtil.ToCurrencyCodes(data.invoice.Currency));
 
             invoiceDoc.Type = InvoiceType.Invoice; //TODO: make this configurable
-            invoiceDoc.ActualDeliveryDate = invoiceDoc.InvoiceDate;
+            invoiceDoc.ActualDeliveryDate = data.invoice.DeliveryDate.ToDateTime(TimeOnly.MinValue);
 
             invoiceDoc.Buyer = new Party();
             invoiceDoc.Buyer.Name = data.invoiceBuyer.CompanyName;
@@ -271,7 +278,7 @@ namespace FredsWorkmate.DocumentGeneration
             invoiceDoc.Seller.Postcode = data.invoiceSeller.PostalCode;
             invoiceDoc.Seller.City = data.invoiceSeller.City;
             invoiceDoc.Seller.Country = CountryCodeUtil.ToCountryCodes(data.invoiceSeller.Country);
-            invoiceDoc.Seller.ID = new GlobalID(GlobalIDSchemeIdentifiers.Unknown, "TODO Seller Id in buyers system");
+            invoiceDoc.Seller.ID = new GlobalID(null, "TODO Seller Id in buyers system");
             invoiceDoc.SellerContact = new Contact();
             invoiceDoc.SellerContact.Name = data.invoiceSeller.ContactName;
             invoiceDoc.SellerContact.EmailAddress = data.invoiceSeller.Email;
@@ -291,11 +298,11 @@ namespace FredsWorkmate.DocumentGeneration
             }
             if (data.invoiceBuyer.VATRate > 0)
             {
-                invoiceDoc.AddApplicableTradeTax(total, data.invoiceBuyer.VATRate * 100, total * data.invoiceBuyer.VATRate, TaxTypes.VAT);
+                invoiceDoc.AddApplicableTradeTax(total, data.invoiceBuyer.VATRate * 100, total * data.invoiceBuyer.VATRate, TaxTypes.VAT, TaxCategoryCodes.S);
             }
 
             // Save the XML
-            var xmlPath = Path.Combine(Path.GetTempPath(), $" {data.invoice.InvoiceNumber}.xml");
+            var xmlPath = lastXRechnungXmlPath = Path.Combine(Path.GetTempPath(), $"invoice_{data.invoice.Id}.xml");
             invoiceDoc.Save(xmlPath, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.CII);
 
             //TODO: actually attach the fucking file, but i cant find how anywhere

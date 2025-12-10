@@ -3,7 +3,9 @@ using FredsWorkmate.Database.Models;
 using FredsWorkmate.Util;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.Metrics;
 using System.Globalization;
+using System.IO;
 
 namespace FredsWorkmate.Pages.Invoice
 {
@@ -40,20 +42,21 @@ namespace FredsWorkmate.Pages.Invoice
 
             string invoiceNumber = req.Form["InvoiceNumber"].First<string>();
             DateOnly invoiceDate = DateOnly.Parse(req.Form["InvoiceDate"].First<string>());
+            DateOnly deliveryDate = DateOnly.Parse(req.Form["DeliveryDate"].First<string>());
 
             InvoiceBuyer buyer = new()
             {
                 Invoice = null!,
                 Id = db.GetNewId<InvoiceBuyer>(),
-                ContactName = req.Form["Buyer.ContactName"].First<string>(),
-                CompanyName = req.Form["Buyer.CompanyName"].First<string>(),
-                Email = req.Form["Buyer.Email"].First<string>(),
-                Street = req.Form["Buyer.Street"].First<string>(),
-                HouseNumber = req.Form["Buyer.HouseNumber"].First<string>(),
-                PostalCode = req.Form["Buyer.PostalCode"].First<string>(),
-                City = req.Form["Buyer.City"].First<string>(),
-                Country = Enum.Parse<CountryCode>(req.Form["Buyer.Country"].First<string>()),
-                VATRate = decimal.Parse(req.Form["Buyer.VATRate"].First<string>(), CultureInfo.InvariantCulture),
+                ContactName = "",
+                CompanyName = "",
+                Email = "",
+                Street = "",
+                HouseNumber = "",
+                PostalCode = "",
+                City = "",
+                Country = CountryCode.DE,
+                VATRate = 0,
             };
             string buyerId = req.Form["Buyer"].First<string>();
             if (!string.IsNullOrEmpty(buyerId))
@@ -73,24 +76,37 @@ namespace FredsWorkmate.Pages.Invoice
                     buyer.VATRate = buyerCustomer.VATRate;
                 }
             }
+            else
+            {
+                buyer.ContactName = req.Form["Buyer.ContactName"].First<string>();
+                buyer.CompanyName = req.Form["Buyer.CompanyName"].First<string>();
+                buyer.Email = req.Form["Buyer.Email"].First<string>();
+                buyer.Street = req.Form["Buyer.Street"].First<string>();
+                buyer.HouseNumber = req.Form["Buyer.HouseNumber"].First<string>();
+                buyer.PostalCode = req.Form["Buyer.PostalCode"].First<string>();
+                buyer.City = req.Form["Buyer.City"].First<string>();
+                buyer.Country = Enum.Parse<CountryCode>(req.Form["Buyer.Country"].First<string>());
+                buyer.VATRate = decimal.Parse(req.Form["Buyer.VATRate"].First<string>(), CultureInfo.InvariantCulture);
+            }
+
 
             InvoiceSeller seller = new()
             {
                 Invoice = null!,
                 Id = db.GetNewId<InvoiceSeller>(),
-                ContactName = req.Form["Seller.ContactName"].First<string>(),
-                CompanyName = req.Form["Seller.CompanyName"].First<string>(),
-                Email = req.Form["Seller.Email"].First<string>(),
-                Street = req.Form["Seller.Street"].First<string>(),
-                HouseNumber = req.Form["Seller.HouseNumber"].First<string>(),
-                PostalCode = req.Form["Seller.PostalCode"].First<string>(),
-                City = req.Form["Seller.City"].First<string>(),
-                Country = Enum.Parse<CountryCode>(req.Form["Seller.Country"].First<string>()),
-                BankName = req.Form["Seller.BankName"].First<string>(),
-                BankIBAN = req.Form["Seller.BankIBAN"].First<string>(),
-                BankBIC_Swift = req.Form["Seller.BankBIC_Swift"].First<string>(),
-                FC = req.Form["Seller.FC"].First<string>(),
-                VA = req.Form["Seller.VA"].First<string>(),
+                ContactName = "",
+                CompanyName = "",
+                Email = "",
+                Street = "",
+                HouseNumber = "",
+                PostalCode = "",
+                City = "",
+                Country = CountryCode.DE,
+                BankName = "",
+                BankIBAN = "",
+                BankBIC_Swift = "",
+                FC = "",
+                VA = "",
             };
             string sellerId = req.Form["Seller"].First<string>();
             if (!string.IsNullOrEmpty(sellerId))
@@ -114,6 +130,22 @@ namespace FredsWorkmate.Pages.Invoice
                     seller.VA = sellerCompany.VA;
                 }
             }
+            else
+            {
+                seller.ContactName = req.Form["Seller.ContactName"].First<string>();
+                seller.CompanyName = req.Form["Seller.CompanyName"].First<string>();
+                seller.Email = req.Form["Seller.Email"].First<string>();
+                seller.Street = req.Form["Seller.Street"].First<string>();
+                seller.HouseNumber = req.Form["Seller.HouseNumber"].First<string>();
+                seller.PostalCode = req.Form["Seller.PostalCode"].First<string>();
+                seller.City = req.Form["Seller.City"].First<string>();
+                seller.Country = Enum.Parse<CountryCode>(req.Form["Seller.Country"].First<string>());
+                seller.BankName = req.Form["Seller.BankName"].First<string>();
+                seller.BankIBAN = req.Form["Seller.BankIBAN"].First<string>();
+                seller.BankBIC_Swift = req.Form["Seller.BankBIC_Swift"].First<string>();
+                seller.FC = req.Form["Seller.FC"].First<string>();
+                seller.VA = req.Form["Seller.VA"].First<string>();
+            }
 
             string currency = req.Form["Currency"].First<string>();
             Database.Models.Invoice invoice = new()
@@ -121,6 +153,7 @@ namespace FredsWorkmate.Pages.Invoice
                 Id = db.GetNewId<Database.Models.Invoice>(),
                 InvoiceNumber = invoiceNumber,
                 InvoiceDate = invoiceDate,
+                DeliveryDate = deliveryDate,
                 Buyer = buyer,
                 Seller = seller,
                 Currency = Enum.Parse<CurrencyCode>(currency)
